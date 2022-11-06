@@ -1,8 +1,10 @@
 name: Sonar
 
 on:
-  - pull_request
-  - push
+  workflow_run:
+    workflows: ["Kics"]
+    types: 
+      - completed
 
 jobs:
   sonar:
