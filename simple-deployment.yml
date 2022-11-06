@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: dev-1
+  labels:
+    app: sandbox
+  name: sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sandbox
+  template:
+    metadata:
+      labels:
+        app: sandbox
+    spec:
+
+      serviceAccountName: build-robot
+      #automountServiceAccountToken: false
+      containers:
+      - 
+        image: public.ecr.aws/lts/ubuntu:22.04_stable
+        name: ubuntu
+        imagePullPolicy: Always
+        command: ['/usr/bin/sleep']
+        args: ['infinity']
+        resources: 
+          requests:
+            memory: "1Gi"
+            cpu: "4000m"
+          limits:
+            memory: "1Gi"
+            cpu: "4000m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - NET_RAW
+          privileged: false
+          readOnlyRootFilesystem: false
+          seLinuxOptions: {}      
+        workingDir: /
