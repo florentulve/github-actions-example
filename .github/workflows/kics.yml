@@ -2,7 +2,9 @@ name: kics
 
 on: [push, pull_request]
 
-
+env:
+  KICS_OUTPUT_NAME: kics-results
+  KICS_REPORT_FORMATS: html,json,pdf,sonarqube
 
 jobs:
   kics:
@@ -11,27 +13,27 @@ jobs:
     container:
       image: docker.io/checkmarx/kics:latest
     steps:
-      - name: kics scan
-      - uses: actions/checkout@v3
-      - run: |
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: scan
+        run: |
               echo "KICS_BLOCK_ON_HIGH: $KICS_BLOCK_ON_HIGH
               KICS_EXCLUDE_QUERIES: $KICS_EXCLUDE_QUERIES
               KICS_OUTPUT_NAME: $KICS_OUTPUT_NAME
               KICS_REPORT_FORMATS: $KICS_REPORT_FORMATS"
-      - run: KICS_RESULT=$(kics scan --ci -p "$PWD" --exclude-queries "$KICS_EXCLUDE_QUERIES" --output-path "$PWD" --output-name "$KICS_OUTPUT_NAME" --report-formats "$KICS_REPORT_FORMATS" ) || true
-      - run: export TOTAL_SEVERITY_COUNTER=`grep '"total_counter"':' ' kics-results.json | awk {'print $2'}`
-      - run: export SEVERITY_COUNTER_HIGH=`grep '"HIGH"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
-      - run: export SEVERITY_COUNTER_MEDIUM=`grep '"INFO"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
-      - run: export SEVERITY_COUNTER_LOW=`grep '"LOW"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
-      - run: export SEVERITY_COUNTER_INFO=`grep '"MEDIUM"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
-      - run: |
-            echo "TOTAL SEVERITY COUNTER: $TOTAL_SEVERITY_COUNTER
-            SEVERITY COUNTER HIGH: $SEVERITY_COUNTER_HIGH
-            SEVERITY COUNTER MEDIUM: $SEVERITY_COUNTER_MEDIUM
-            SEVERITY COUNTER LOW: $SEVERITY_COUNTER_LOW
-            SEVERITY COUNTER INFO: $SEVERITY_COUNTER_INFO"
-      - run: if [ "$KICS_RESULT" -ge "50" ];then echo "Please fix all $SEVERITY_COUNTER_HIGH HIGH SEVERITY ISSUES" && exit 1; else exit 0;fi
-      - name: Archive production artifacts
+              KICS_RESULT=$(kics scan --ci -p "$PWD" --exclude-queries "$KICS_EXCLUDE_QUERIES" --output-path "$PWD" --output-name "$KICS_OUTPUT_NAME" --report-formats "$KICS_REPORT_FORMATS" ) || true
+              export TOTAL_SEVERITY_COUNTER=`grep '"total_counter"':' ' kics-results.json | awk {'print $2'}`
+              export SEVERITY_COUNTER_HIGH=`grep '"HIGH"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
+              export SEVERITY_COUNTER_MEDIUM=`grep '"INFO"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
+              export SEVERITY_COUNTER_LOW=`grep '"LOW"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
+              export SEVERITY_COUNTER_INFO=`grep '"MEDIUM"':' ' kics-results.json | awk {'print $2'} | sed 's/.$//'`
+              echo "TOTAL SEVERITY COUNTER: $TOTAL_SEVERITY_COUNTER
+              SEVERITY COUNTER HIGH: $SEVERITY_COUNTER_HIGH
+              SEVERITY COUNTER MEDIUM: $SEVERITY_COUNTER_MEDIUM
+              SEVERITY COUNTER LOW: $SEVERITY_COUNTER_LOW
+              SEVERITY COUNTER INFO: $SEVERITY_COUNTER_INFO"
+              if [ "$KICS_RESULT" -ge "50" ];then echo "Please fix all $SEVERITY_COUNTER_HIGH HIGH SEVERITY ISSUES" && exit 1; else exit 0;fi
+      - name: Artifact
         uses: actions/upload-artifact@v3
         with:
           name: kics reports
