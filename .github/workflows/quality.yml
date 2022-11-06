@@ -8,6 +8,7 @@ env:
   KICS_OUTPUT_NAME: kics-results
   KICS_REPORT_FORMATS: html,json,pdf,sonarqube
   SONAR_HOST_URL: https://sonarcloud.io/
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 jobs:
   kics:
