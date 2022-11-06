@@ -1,6 +1,10 @@
-name: kics
+name: Kics
 
-on: [push, pull_request]
+on:
+  workflow_run:
+    workflows: ["Sonar"]
+    types: 
+      - completed
 
 env:
   KICS_OUTPUT_NAME: kics-results
@@ -36,7 +40,7 @@ jobs:
       - name: Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: kics reports
+          name: kics-reports
           path: |
                 ./kics-results.html
                 ./kics-results.pdf

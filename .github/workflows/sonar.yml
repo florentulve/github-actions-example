@@ -1,4 +1,4 @@
-name: sonar
+name: Sonar
 
 on:
   - pull_request
@@ -13,5 +13,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kics-reports
       - name: scan
         run: sonar-scanner -Dsonar.qualitygate.wait=true
